@@ -1,0 +1,39 @@
+package com.example.x14g016.keijiban;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class Json {
+    public static <T> T send(String adress, Object obj, Class<T> valueType) {
+        HttpURLConnection connection = null;
+        try {
+            //JSON用オブジェクトの作成
+            ObjectMapper mapper = new ObjectMapper();
+            //URLの設定
+            URL url = new URL(adress);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setUseCaches(false);
+            connection.setRequestMethod("POST");
+            connection.setInstanceFollowRedirects(true);
+            connection.setRequestProperty("Content-Type", String.format("text/plain"));
+            connection.setDoOutput(true);
+            //オブジェクトをJSONデータに変換して出力
+            OutputStream os = connection.getOutputStream();
+            if (obj != null) {
+                byte[] data = mapper.writeValueAsBytes(obj);
+                os.write(data);
+            }
+            os.close();
+            return mapper.readValue(connection.getInputStream(), valueType);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null)
+                connection.disconnect();
+        }
+        return null;
+    }
+}
